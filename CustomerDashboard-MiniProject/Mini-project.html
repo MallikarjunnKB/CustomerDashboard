@@ -1,0 +1,198 @@
+<html>
+    <head>
+        <title> customer dashboard </title>
+    </head>
+    <body>
+        <div id="root">
+
+        </div>
+
+        <!-- Order of import of React Libraries : 1.ReactDevelopment 2.ReactDOMDevelopment 3.BabelJS -->
+
+       <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+       <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+       <script crossorigin src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+       <script src=" https://unpkg.com/axios/dist/axios.min.js"></script>
+       <script type="text/javascript" src="libraries/hammer.min.js"></script>
+       
+
+       
+    
+            
+        <script type="text/babel">
+        const rootHandle = document.getElementById('root')
+
+        const { useState, useEffect } = React
+
+        
+
+        function OrderDistribution(props){
+            const {countOfOrders} = props
+
+           const result = {'1':0, '2':0, '3':0, '4':0,'5+':0 }
+
+           for(const k in countOfOrders){
+               if(countOfOrders[k] == 1){
+                   result[1] +=1
+               }
+              else if(countOfOrders[k] == 2){
+                   result[2] +=1
+               }
+               else if(countOfOrders[k] == 3){
+                   result[3] +=1
+               }
+               else if(countOfOrders[k] == 4){
+                   result[4] +=1
+               }
+               else if(countOfOrders[k] >= 5){
+                   result['5+'] +=1
+               }
+           }
+
+           console.log(result)
+           const countData = Object.keys(result).map((ele)=>{
+               return {'No' : ele, 'Count' : result[ele]}
+           })
+           console.log(countData)
+           
+           
+            return (
+               <div>
+                    <table border="1">
+                        <thead>
+                            <tr>
+                                <td> No Of Orders </td>
+                                <td> Count Of Customers </td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {countData.map((ele)=>{
+                                return (
+                                    <tr key={ele.No}>
+                                        <td> {ele.No} </td>
+                                        <td> {ele.Count} </td>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
+                
+                    </div>
+            )
+        }
+
+
+        function ListingCustomers(props){
+            const {filteredData} = props
+            const [data, setData] = useState(filteredData)
+            const [search, setSearch] = useState('')
+
+            
+
+            console.log(filteredData)
+
+            const handleSearchChange = (e) =>{
+                setSearch(e.target.value)
+                const result = filteredData.filter((ele)=>{
+                    return ele.Name.toLowerCase().includes(e.target.value) 
+                })
+                console.log(result)
+                setData(result)
+            }
+
+            return (
+                <div>
+                    <input type="text" value={search} onChange={handleSearchChange} placeholder="search by name" /> <br /><br />
+                    <table border="1">
+                        <thead>
+                            <tr>
+                                <td> Id </td>
+                                <td> Name </td>
+                                <td> Mobile </td>
+                                <td> Details </td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            { data.map((ele,i)=>{
+                                return (
+                                    <tr key={i}>
+                                        <td> {i+1} </td>
+                                        <td> {ele.Name} </td>
+                                        <td> {ele.Phone} </td>
+                                        <td> <button> show </button> </td>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
+             </div>
+            )
+        }
+
+        
+        function CustomerDashboard(props){
+            const [customerData, setCustomerData] = useState([])
+            
+
+            useEffect(()=>{
+                axios.get('./customer-data.json')
+                    .then((res)=>{
+                        console.log(res.data)
+                        setCustomerData(res.data)
+                    })
+                    .catch((error)=>{
+                        console.log('error')
+                    })
+            }, [])
+
+            const getTotalAmount = (data) =>{
+                const result = data.reduce((total,currentValue)=>{
+                    return total+currentValue.Amount
+                },0)
+                return result
+            }
+
+            const OrderedOnce = (data) =>{
+                const obj = {}
+                for(const ele of data){
+                    if(obj.hasOwnProperty(ele.Name)){
+                        obj[ele.Name] +=1
+                    }
+                    else{
+                        obj[ele.Name] = 1
+                    }
+                }
+                    
+                return obj
+            }
+
+
+            const key = 'Phone';
+            const filteredData = [...new Map(customerData.map(item => [item[key], item])).values()];
+            
+            console.log(filteredData);
+
+            console.log(OrderedOnce(customerData))
+            const countOfOrders = OrderedOnce(customerData)
+
+
+            return (
+                
+                <div>
+                  <h1> Customer Dashboard </h1>
+                  <h2> Listing Customers </h2>
+                  <h3>{ customerData.length } - Orders </h3>
+                  <h3> {getTotalAmount(customerData)} - Amount </h3>
+                  <h3> {filteredData.length} - Customers</h3>
+                  <ListingCustomers filteredData={filteredData} />
+                  <OrderDistribution countOfOrders={countOfOrders} />
+                 
+                </div>
+            )
+        }
+
+        ReactDOM.render(<CustomerDashboard />, rootHandle)
+
+        </script>
+    </body>
+</html>

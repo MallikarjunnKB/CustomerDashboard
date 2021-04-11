@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <title> customer dashboard </title>
+    </head>
+    <body>
+        <div id="root">
+
+        </div>
+
+        <!-- Order of import of React Libraries : 1.ReactDevelopment 2.ReactDOMDevelopment 3.BabelJS -->
+
+       <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+       <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+       <script crossorigin src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+       <script src=" https://unpkg.com/axios/dist/axios.min.js"></script>
+       
+
+       
+    
+            
+        <script type="text/babel">
+        const rootHandle = document.getElementById('root')
+
+        const { useState, useEffect } = React
+
+      
+       
+        function CustomerDashboard(props){
+            const [customerData, setCustomerData] = useState([])
+            
+
+            useEffect(()=>{
+                axios.get('./customer-data.json')
+                    .then((res)=>{
+                        console.log(res.data)
+                        setCustomerData(res.data)
+                    })
+                    .catch((error)=>{
+                        console.log('error')
+                    })
+            }, [])
+
+            const getTotalAmount = (data) =>{
+                const result = data.reduce((total,currentValue)=>{
+                    return total+currentValue.Amount
+                },0)
+                return result
+            }
+
+            const result = customerData.map((ele)=>{
+                return {Name: ele.Name, Phone: ele.Phone}
+            })
+            console.log(result)
+
+            const UniqueData = 
+            console.log(UniqueData)
+
+            return (
+                
+                <div>
+                  <h1> Customer Dashboard </h1>
+                  <h2> Listing Customers </h2>
+                  <h3>{ customerData.length } - Orders </h3>
+                  <h3> {getTotalAmount(customerData)} - Amount </h3>
+                  <h3> {} - Customers</h3>
+                  
+                 
+                </div>
+            )
+        }
+
+        ReactDOM.render(<CustomerDashboard />, rootHandle)
+
+        </script>
+    </body>
+</html>
